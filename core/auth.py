@@ -8,6 +8,7 @@ from uuid import UUID
 class TokenSchema(BaseModel):
     user_id: UUID
     email: EmailStr | None = None
+    is_seller: bool
 
 
 async def check_password(plain_password, hashed_password: str) -> bool: 
@@ -63,5 +64,6 @@ def decode_jwt_token(token: str, secret_key: str, algorithm: str):
 
     return TokenSchema(
         user_id=user_id,
-        email=payload.get("email")
+        email=payload.get("email"),
+        is_seller=payload.get("is_seller")
     )
