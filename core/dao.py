@@ -17,6 +17,19 @@ class BaseDAO:
             raise e
         return new_instance 
     
+
+    @classmethod
+    async def add_many(cls, session: AsyncSession, data: List[dict]):
+        instances = [cls.model(**item) for item in data]
+
+        session.add_all(instances)
+        try:
+            await session.commit()
+        except SQLAlchemyError as e:
+            raise e
+        return instances
+
+    
     @classmethod
     async def get_object_by_id(cls, session: AsyncSession, obj_id: int):
         stmt = select(cls.model).filter(cls.model.id == obj_id)
