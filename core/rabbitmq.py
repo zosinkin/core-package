@@ -22,7 +22,7 @@ class RabbitMQClient:
         )
     
 
-    async def publish(self, routinng_key: str, message: dict):
+    async def publish(self, routing_key: str, message: dict):
         if not self.channel or self.channel.close():
            raise RuntimeError("RabbitMQ channel is not initialized")
         
@@ -33,22 +33,22 @@ class RabbitMQClient:
                 body=body,
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT
             ),
-            routing_key=routinng_key
+            routing_key=routing_key
         )
 
 
-    async def setup_queue(self, queue_name: str, routing_key: str):
-        self.queue = await self.channel.declare_queue(
+    async def subscribe(
+            self,
+            queue_name: str,
+            routing_key: str,
+            handler
+    ):
+        queue = await self.channel.declare_queue(
             queue_name,
-            durable=True
+            durble=True
         )
-        await self.queue.bind(self.exchange, routing_key=routing_key)
-    
-
-    async def start_consuming(self, handler):
-        if not self.queue:
-            raise RuntimeError("Queue is not initialized")
-        await self.queue.consume(handler)
+        await queue.bind(self.exchange, routing_key)
+        await queue.consume(handler)
 
     
     async def close(self):
