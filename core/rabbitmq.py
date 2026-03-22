@@ -8,6 +8,7 @@ class RabbitMQClient:
         self.connection = None
         self.channel = None
         self.exchange = None
+        self.queue = None
 
 
     async def connect(self):
@@ -34,6 +35,20 @@ class RabbitMQClient:
             ),
             routing_key=routinng_key
         )
+
+
+    async def setup_queue(self, queue_name: str, routing_key: str):
+        self.queue = await self.channel.declare_queue(
+            queue_name,
+            durable=True
+        )
+        await self.queue.bind(self.exchange, routing_key=routing_key)
+    
+
+    async def start_consuming(self, handler):
+        if not self.queue:
+            raise RuntimeError("Queue is not initialized")
+        await self.queue.consume(handler)
 
     
     async def close(self):
